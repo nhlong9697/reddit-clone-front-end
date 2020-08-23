@@ -47,6 +47,8 @@ export class AuthService {
       refreshToken: this.getRefreshToken(),
       username: this.getUserName(),
     };
+    console.log('this is the token getting  refresh');
+    console.log(refreshTokenPayload);
     return this.http
       .post<LoginResponse>(
         'http://localhost:8080/api/auth/refresh/token',
@@ -54,6 +56,8 @@ export class AuthService {
       )
       .pipe(
         tap((response) => {
+          console.log('response after refresh');
+          console.log(response);
           this.localStorage.store(
             'authenticationToken',
             response.authenticationToken
