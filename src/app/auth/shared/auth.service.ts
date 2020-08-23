@@ -11,12 +11,12 @@ import { map, tap } from 'rxjs/operators';
 })
 export class AuthService {
   constructor(
-    private httpClient: HttpClient,
+    private http: HttpClient,
     private localStorage: LocalStorageService
   ) {}
 
   signup(signupRequestPayload: SignupRequestPayload): Observable<any> {
-    return this.httpClient.post(
+    return this.http.post(
       'http://localhost:8080/api/auth/signup',
       signupRequestPayload,
       { responseType: 'text' }
@@ -24,7 +24,7 @@ export class AuthService {
   }
 
   login(loginRequestPayLoad: LoginRequestPayload): Observable<boolean> {
-    return this.httpClient
+    return this.http
       .post<LoginResponse>(
         'http://localhost:8080/api/auth/login',
         loginRequestPayLoad
@@ -47,7 +47,7 @@ export class AuthService {
       refreshToken: this.getRefreshToken(),
       username: this.getUserName(),
     };
-    return this.httpClient
+    return this.http
       .post<LoginResponse>(
         'http://localhost:8080/api/auth/refresh/token',
         refreshTokenPayload
