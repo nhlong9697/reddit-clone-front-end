@@ -5,7 +5,6 @@ import {
   HttpHandler,
   HttpEvent,
   HttpErrorResponse,
-  HttpHeaders,
 } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { AuthService } from './auth/shared/auth.service';
@@ -25,62 +24,59 @@ export class TokenInterceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    //get token from storage
+    if (req.url.indexOf('refresh') !== -1 || req.url.indexOf('login') !== -1) {
+      return next.handle(req);
+    }
     const jwtToken = this.authService.getJwtToken();
+    console.log('token before refresh');
+    console.log(jwtToken);
 
     if (jwtToken) {
-      console.log('start add token to request header');
-      console.log(req);
-      console.log(jwtToken);
-      this.addToken(req, jwtToken);
+      return next.handle(this.addToken(req, jwtToken)).pipe(
+        catchError((error) => {
+          console.log('this is the error');
+          console.log(error);
+          if (error instanceof HttpErrorResponse && error.status === 403) {
+            console.log('403 error is detected');
+            return this.handleAuthErrors(req, next);
+          } else {
+            console.log('unknown error');
+            return throwError(error);
+          }
+        })
+      );
     }
-    console.log('request after add referesh token');
-    console.log(req);
-    //if error 403 turns to handleAuthErrors to refresh token if possible
-    return next.handle(req).pipe(
-      catchError((error) => {
-        if (error instanceof HttpErrorResponse && error.status === 403) {
-          console.log('server receive error 403');
-          console.log(error);
-          return this.handleAuthErrors(req, next);
-        } else {
-          console.log('unknown error');
-          console.log(error);
-          return throwError(error);
-        }
-      })
-    );
+    return next.handle(req);
   }
 
   private handleAuthErrors(
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    console.log('handle auth error');
-    console.log(req);
     if (!this.isTokenRefreshing) {
       this.isTokenRefreshing = true;
       this.refreshTokenSubject.next(null);
 
       return this.authService.refreshToken().pipe(
-        //refreshToken() method return a loginResponse
-        //map that loginResponse to refreshTokenSubject
-        //then use addToken method to add token to headers from the refreshTokenSubject
         switchMap((refreshTokenResponse: LoginResponse) => {
           this.isTokenRefreshing = false;
-          console.log(
-            'this is token response after auth service refresh token'
-          );
-          console.log(refreshTokenResponse);
           this.refreshTokenSubject.next(
             refreshTokenResponse.authenticationToken
           );
-          console.log(
-            'this is refresh token subject that will transfer request with refreshed token'
-          );
-          console.log(this.refreshTokenSubject);
+          console.log('token after refresh');
+          console.log(refreshTokenResponse.authenticationToken);
           return next.handle(
             this.addToken(req, refreshTokenResponse.authenticationToken)
+          );
+        })
+      );
+    } else {
+      return this.refreshTokenSubject.pipe(
+        filter((result) => result !== null),
+        take(1),
+        switchMap((res) => {
+          return next.handle(
+            this.addToken(req, this.authService.getJwtToken())
           );
         })
       );
@@ -89,7 +85,7 @@ export class TokenInterceptor implements HttpInterceptor {
 
   addToken(req: HttpRequest<any>, jwtToken: any) {
     return req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${jwtToken}`),
+      headers: req.headers.set('Authorization', 'Bearer ' + jwtToken),
     });
   }
 }
