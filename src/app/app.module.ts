@@ -24,6 +24,7 @@ import { ListSubredditsComponent } from './subreddit/list-subreddits/list-subred
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { ViewPostComponent } from './post/view-post/view-post.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { UserProfileComponent } from './auth/user-profile/user-profile.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -39,6 +40,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     CreatePostComponent,
     ListSubredditsComponent,
     ViewPostComponent,
+    UserProfileComponent,
   ],
   imports: [
     BrowserModule,
