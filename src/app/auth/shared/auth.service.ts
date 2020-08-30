@@ -6,7 +6,7 @@ import { LocalStorageService } from 'ngx-webstorage';
 import { LoginRequestPayload } from '../login/login-request.payload';
 import { LoginResponse } from '../login/login-response';
 import { map, tap } from 'rxjs/operators';
-
+import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root',
 })
@@ -26,7 +26,7 @@ export class AuthService {
 
   signup(signupRequestPayload: SignupRequestPayload): Observable<any> {
     return this.httpClient.post(
-      'http://localhost:8080/api/auth/signup',
+      environment.apiUrl + 'api/auth/signup',
       signupRequestPayload,
       { responseType: 'text' }
     );
@@ -35,7 +35,7 @@ export class AuthService {
   login(loginRequestPayload: LoginRequestPayload): Observable<boolean> {
     return this.httpClient
       .post<LoginResponse>(
-        'http://localhost:8080/api/auth/login',
+        environment.apiUrl + 'api/auth/login',
         loginRequestPayload
       )
       .pipe(
@@ -64,7 +64,7 @@ export class AuthService {
     console.log(this.refreshTokenPayload);
     return this.httpClient
       .post<LoginResponse>(
-        'http://localhost:8080/api/auth/refresh/token',
+        environment.apiUrl + 'api/auth/refresh/token',
         this.refreshTokenPayload
       )
       .pipe(
@@ -85,7 +85,7 @@ export class AuthService {
 
   logout() {
     this.httpClient
-      .post('http://localhost:8080/api/auth/logout', this.refreshTokenPayload, {
+      .post(environment.apiUrl + 'api/auth/logout', this.refreshTokenPayload, {
         responseType: 'text',
       })
       .subscribe(
