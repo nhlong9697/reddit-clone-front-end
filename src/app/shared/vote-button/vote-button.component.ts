@@ -21,6 +21,7 @@ export class VoteButtonComponent implements OnInit {
   downvoteColor = '';
   faArrowUp = faArrowUp;
   faArrowDown = faArrowDown;
+  isLoggedIn: boolean;
 
   constructor(
     private voteService: VoteService,
@@ -32,18 +33,25 @@ export class VoteButtonComponent implements OnInit {
       voteType: undefined,
       postId: undefined,
     };
+    this.authService.loggedIn.subscribe(
+      (data: boolean) => (this.isLoggedIn = data)
+    );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.updateVoteDetails();
+  }
 
   upvotePost() {
     this.votePayLoad.voteType = VoteType.UPVOTE;
     this.vote();
+    this.upvoteColor = '';
   }
 
   downvotePost() {
     this.votePayLoad.voteType = VoteType.DOWNVOTE;
     this.vote();
+    this.downvoteColor = '';
   }
 
   private vote() {
@@ -53,7 +61,7 @@ export class VoteButtonComponent implements OnInit {
         this.updateVoteDetails();
       },
       (error) => {
-        this.toastr.error(error.error.message);
+        this.toastr.error(error.error);
         throwError(error);
       }
     );

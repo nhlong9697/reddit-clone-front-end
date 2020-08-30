@@ -10,6 +10,6 @@ export class VoteService {
   constructor(private http: HttpClient) {}
 
   vote(votePayLoad: VotePayLoad): Observable<any> {
-    return this.http.post(environment.apiUrl + 'api/vote', votePayLoad);
+    return this.http.post(environment.apiUrl + 'api/votes', votePayLoad);
   }
 }
